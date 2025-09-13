@@ -21,22 +21,42 @@ function App() {
   });
 
   const handleGetWeatherData = async () => {
-    if (!location.trim()) {
-      alert('Please enter a location');
-      return;
+  if (!location.trim()) {
+    alert('Please enter a location');
+    return;
+  }
+
+  setIsLoading(true);
+
+  try {
+    const response = await fetch('http://127.0.0.1:5000/weather', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ city: location }),
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      setWeatherData({
+        temperature: data.temperature + " °C",
+        humidity: "-- %",     // Modify if OpenWeather API gives humidity
+        windSpeed: "-- km/h", // Same here
+        rainfall: "-- mm",    // And here
+        location: data.city,
+      });
+    } else {
+      alert(data.error || 'Failed to get weather data');
     }
-    
-    setIsLoading(true);
-    // Placeholder for future API integration
-    console.log(`Getting weather data for: ${location}`);
-    
-    // Simulate API call delay
-    setTimeout(() => {
-      setIsLoading(false);
-      // Here you would update weatherData with real API response
-      console.log("Weather data fetched successfully");
-    }, 2000);
-  };
+  } catch (error) {
+    console.error('Error fetching weather data:', error);
+    alert('Failed to fetch weather data');
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const handleLocationSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -218,3 +238,4 @@ function App() {
 }
 
 export default App;
+
